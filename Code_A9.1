@@ -1,0 +1,56 @@
+import numpy as np
+import pandas as pd
+import seaborn as sb
+import matplotlib.pyplot as plt
+import sklearn
+from pandas import Series, DataFrame
+from pylab import rcParams
+from sklearn import preprocessing
+from sklearn.linear_model import LogisticRegression
+from sklearn.cross_validation import train_test_split
+from sklearn import metrics
+
+from sklearn.metrics import classification_report
+Url="https://raw.githubusercontent.com/BigDataGal/Python-for-Data-Science/master/titanic-train.csv"
+titanic = pd.read_csv(Url)
+titanic.columns = ['PassengerId','Survived','Pclass','Name','Sex','Age', \
+                   'SibSp','Parch','Ticket','Fare','Cabin','Embarked']
+
+# Print the data info to do initial analysis
+print('-------------------------------------------------------------------------')
+print(titanic.info())
+print('-------------------------------------------------------------------------')
+
+#As Mentioned in Question
+#You use only Pclass, Sex, Age, SibSp (Siblings aboard), Parch (Parents/children aboard),
+#and Fare to predict whether a passenger survived.
+
+# Identify the X and y variables
+titanic['Sex'] = titanic['Sex'].map( {'female': 1, 'male': 0} ).astype(int)
+    
+X = titanic[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch']]
+y = titanic.Survived
+
+# Check for the NA values in X
+print("Check if there are NA values in X :")
+print(X.isnull().sum())
+print('-------------------------------------------------------------------------')
+
+# Filling Age NA values with the mean age
+X.Age.fillna(X.Age.mean(),inplace=True)
+
+# Split the data to train and test set
+X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2, random_state=0)
+
+# Apply Logistic regression
+# Apply Logistic regression
+regression = LogisticRegression()
+regression.fit(X_train,y_train)
+
+print("Simple Logistic regression accuracy: {:.5}%" .format(regression.score(X_test,y_test) * 100))
+
+# Calculating the accuracy using cross validation
+from sklearn.model_selection import cross_val_score
+
+res = cross_val_score(LogisticRegression(), X, y, scoring='accuracy',cv=15)
+print("15-fold cross validation average accuracy: {:.5}%" .format(res.mean()*100))
